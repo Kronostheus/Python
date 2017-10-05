@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+
+import socket
+import signal
+import sys
+
+#localhost
+TCP_IP = '127.0.0.1'
+TCP_PORT = 5005
+BUFFER_SIZE = 1024
+MESSAGE = ""
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Exit if something went wrong
+def errClose():
+    s.close()
+    sys.exit("Aborted")
+
+# Handler for Ctrl-C exit
+def sigClose(signal, frame):
+    s.close()
+    sys.exit()
+
+signal.signal(signal.SIGINT, sigClose)
+
+# Sends Message(query) to Server
+def message():
+    while 1:
+        MESSAGE = raw_input()
+        s.send(MESSAGE)
+        # Wait for Response
+        receive()
+    errClose()
+
+# Receive Response from Server
+def receive():
+    while 1:
+
+        try:
+            # Response
+            data = s.recv(BUFFER_SIZE)
+            if not data:
+                break
+
+            # Print Out Response Block
+            print data
+
+            # If Condition Passes -> Last Block Received
+            if len(data) < BUFFER_SIZE:
+                message()
+
+        except ConnectionError:
+            print "Error: connection to Server lost"
+            break
+        except OSError:
+            print "Error: connection couldn't be made"
+            break
+    errClose()
+
+def main():
+    try:
+        # Attempts to Connect to Server
+        s.connect((TCP_IP, TCP_PORT))
+
+    except ConnectionError:
+        "Error: connection refused or Server not found"
+        errClose()
+
+    # Waits for Query
+    message()
+
+# Start-Up on main()
+if __name__ == "__main__":
+    main()

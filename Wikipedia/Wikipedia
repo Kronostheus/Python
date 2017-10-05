@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+# apt-get python-pip and pip install wikipedia
+import wikipedia # wikipedia api
+
+import socket
+import signal
+import sys
+
+#localhost
+TCP_IP = '127.0.0.1'
+TCP_PORT = 5005
+BUFFER_SIZE = 1024
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#Reuse address
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+# Exit if something went wrong
+def errClose():
+    s.close()
+    sys.exit("Aborted")
+
+# Handler for Ctrl-C exit
+def sigClose(signal, frame):
+    s.close()
+    sys.exit()
+
+signal.signal(signal.SIGINT, sigClose)
+
+# Builds message in case of disambiguation of query (shows 3 alternatives)
+def disambiguation(data):
+    message = "Several entries satisfy your query, please try: \n"
+    for i in range(0, len(data)):
+        # Making message more readable
+        message += data[i].encode('utf-8') + "\n"
+    return message
+
+# Wikipedia search function
+def search(query, conn):
+    try:
+        # Success = show summary of queried Wikipedia page
+        result = wikipedia.summary(query)
+        conn.send(result.encode('utf-8'))
+
+    except wikipedia.exceptions.DisambiguationError as e:
+        # Query wasn't specific enough
+
+        # Three alternatives of what might be the actual query
+        data = e.options[:3]
+        result = disambiguation(data)
+        conn.send(result)
+
+    except wikipedia.exceptions.PageError:
+        # No page was found with given query
+        conn.send("Page Not Found")
+
+    except UnicodeError:
+        conn.send("Error while trying to encode data to UTF-8")
+
+def main():
+    try:
+        # Listening for Clients
+        s.bind((TCP_IP, TCP_PORT))
+        s.listen(1)
+
+    except ConnectionError:
+        print "Error: connection might have been refused"
+        errClose()
+
+    except OSError:
+        print "Error: couldn't make connection"
+        errClose()
+
+    # Connection Accepted
+    conn, addr = s.accept()
+    print 'Connection address: ', addr
+
+    while 1:
+
+        try:
+            # Receive Query
+            data = conn.recv(BUFFER_SIZE)
+            if not data:
+                break
+
+            print "received data: ", data
+
+            # Execute Query
+            search(data, conn)
+
+        except ConnectionError:
+            print "Error: connection to Client lost"
+            s.close()
+            break
+
+        except OSError:
+            print "Error: connection couldn't be made"
+            s.close()
+            break
+    conn.close()
+    errClose()
+
+# Start-Up on main()
+if __name__ == "__main__":
+    main()

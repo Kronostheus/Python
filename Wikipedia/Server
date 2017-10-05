@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+import socket
+import signal
+import sys
+
+#localhost
+TCP_IP = '127.0.0.1'
+TCP_PORT = 5005
+BUFFER_SIZE = 1024
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#reuse address
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+# Handler for Ctrl-C exit
+def sigClose(signal, frame):
+    s.close()
+    sys.exit()
+
+signal.signal(signal.SIGINT, sigClose)
+
+try:
+    # Listening for Connections
+    s.bind((TCP_IP, TCP_PORT))
+    s.listen(1)
+except OSError:
+    print "Error: couldn't make connection"
+
+conn, addr = s.accept()
+print 'Connection address: ', addr
+
+while 1:
+
+    try:
+        # Receive Data from Connection
+        data = conn.recv(BUFFER_SIZE)
+        if not data:
+            break
+
+        # Print out Data
+        print "received data: ", data
+
+    except OSError:
+        print "Error: connection couldn't be made"
+        s.close()
+conn.close()
