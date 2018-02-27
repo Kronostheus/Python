@@ -1,5 +1,7 @@
 import re
 
+print "\n=Using group()="
+
 # initial r' marks input as a raw string and avoids extra backslashes
 # use of parentheses allows the segmentation of input into groups
 phoneNumRegex = re.compile(r'(\d\d\d)-(\d\d\d-\d\d\d\d)')
@@ -7,14 +9,12 @@ phoneNumRegex = re.compile(r'(\d\d\d)-(\d\d\d-\d\d\d\d)')
 # search returns Match object or None
 mo = phoneNumRegex.search('My number is 415-555-4242')
 
-print "\n=Using group()="
-
 # returns the matched text from the Match object
-print mo.group()
+print "Entire match: ", mo.group()
 
 # since we devided the regex object we can have 2 groups
-print mo.group(1)
-print mo.group(2)
+print "Group 1: ", mo.group(1)
+print "Group 2: ", mo.group(2)
 
 print "\n=Using groups()="
 
@@ -30,9 +30,9 @@ print "\n=Escaping parentheses="
 phoneNumRegex = re.compile(r'(\(\d\d\d\)) (\d\d\d-\d\d\d\d)')
 mo = phoneNumRegex.search('My number is (415) 555-4242')
 
-print mo.group(1)
-print mo.group(2)
-print mo.groups()
+print "Group 1: ", mo.group(1)
+print "Group 2: ", mo.group(2)
+print "Groups: ", mo.groups()
 
 print "\n=Using pipe to match multiple groups="
 
@@ -41,10 +41,10 @@ print "\n=Using pipe to match multiple groups="
 heroRegex = re.compile(r'Superman|Batman')
 
 mo1 = heroRegex.search("Batman and Superman")
-print mo1.group()
+print "Batman and Superman -> ", mo1.group()
 
 mo2 = heroRegex.search("Superman and Lois Lane")
-print mo2.group()
+print "Superman and Lois Lane -> ", mo2.group()
 
 print "\n=Optional patterns (?)="
 
@@ -53,10 +53,10 @@ print "\n=Optional patterns (?)="
 superRegex = re.compile(r'Super(wo)?man')
 
 mo1 = superRegex.search("The adventures of Superman")
-print mo1.group()
+print "The adventures of Superman -> ", mo1.group()
 
 mo2 = superRegex.search("The adventures of Superwoman")
-print mo2.group()
+print "The adventures of Superwoman -> ", mo2.group()
 
 print "\n=Optional patterns (*)="
 
@@ -113,10 +113,10 @@ greedyRegex = re.compile(r'(Ha){3,5}')
 nongreedyRegex = re.compile(r'(Ha){3,5}?')
 
 mo1 = greedyRegex.search("HaHaHaHaHa")
-print mo1.group()
+print "Greedy: ", mo1.group()
 
 mo2 = nongreedyRegex.search("HaHaHaHaHa")
-print mo2.group()
+print "Non Greedy: ", mo2.group()
 
 print "\n=FindAll instead of search="
 
