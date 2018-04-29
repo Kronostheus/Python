@@ -90,9 +90,25 @@ def processSkills(row):
         res.append(skill)
     return res
 
+def processGeneration(num, name):
+    dex = {'1': '151', '2': '251', '3': '386', '4': '493', '5': '649', '6': '721', '7': '807'}
+    namelst = name.split(" ")
+    temp_gen = ""
+    for gen, total in dex.items():
+        if num <= total:
+            temp_gen = gen
+            break
+    if namelst[0] == 'Mega':
+        temp_gen = '6'
+    if namelst[-1] == '(Alolan)':
+        temp_gen = '7'
+    return [temp_gen]
+
 def buildPokemon(row):
     pokemon = []
-    pokemon = pokemon + processNum(row) + processName(row) + processType(row) + processSkills(row)
+    poke_num = processNum(row)
+    poke_name = processName(row)
+    pokemon = pokemon + poke_num + poke_name + processType(row) + processSkills(row) + processGeneration(poke_num[0], poke_name[1])
     return pokemon
 
 def getData(table):
@@ -101,7 +117,7 @@ def getData(table):
         data.append(pokemon)
 
 def exportCSV(data):
-    records = pd.DataFrame(data, columns=['#', 'Legend', 'Mega', 'Name', 'Type 1', 'Type 2', 'Total', 'HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'])
+    records = pd.DataFrame(data, columns=['#', 'Legend', 'Mega', 'Name', 'Type 1', 'Type 2', 'Total', 'HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed', 'Generation'])
     records.to_csv('pokemon.csv', encoding='utf-8')
 
 if __name__ == "__main__":
@@ -113,5 +129,6 @@ if __name__ == "__main__":
     table = getTable(req)
     getData(table)
     exportCSV(data)
+    
     
 
