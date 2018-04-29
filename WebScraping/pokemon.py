@@ -104,27 +104,45 @@ def processGeneration(num, name):
         temp_gen = '7'
     return [temp_gen]
 
-def buildPokemon(row):
+def buildPokemon(row, counter):
     pokemon = []
     poke_num = processNum(row)
     poke_name = processName(row)
-    pokemon = pokemon + poke_num + poke_name + processType(row) + processSkills(row) + processGeneration(poke_num[0], poke_name[1])
+    pokemon = pokemon + poke_num + poke_name + processType(row) + processSkills(row) + processSize(counter) + processGeneration(poke_num[0], poke_name[1])
     return pokemon
 
 def getData(table):
+    counter = 0
     for row in table:
-        pokemon = buildPokemon(row)
+        pokemon = buildPokemon(row, counter)
         data.append(pokemon)
+        counter += 1
+
+def getSizes():
+    url = 'https://pokemondb.net/pokedex/stats/height-weight'
+    request = getRequest(url)
+    results = getTable(request)
+    return results
+
+def processSize(counter):
+    sizelst = sizes[counter].find_all('td', attrs={'class':'num'})[1:]
+
+    height = sizelst[0].text.strip().split(" ")[1][1:-2]
+    weight = sizelst[1].text.strip().split(" ")[2][1:]
+    bmi = sizelst[2].text.strip()
+    return [height, weight, bmi]
 
 def exportCSV(data):
-    records = pd.DataFrame(data, columns=['#', 'Legend', 'Mega', 'Name', 'Type 1', 'Type 2', 'Total', 'HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed', 'Generation'])
-    records.to_csv('pokemon.csv', encoding='utf-8')
+    cols = ['#', 'Legend', 'Mega', 'Name', 'Type 1', 'Type 2', 'Total', 'HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed', 'Height (m)', 'Weight (Kg)', 'BMI', 'Generation']
+    records = pd.DataFrame(data, columns=cols)
+    records.to_csv('pokemon.csv', encoding='utf-8', index=False)
 
 if __name__ == "__main__":
     data = []
     url = 'https://pokemondb.net/pokedex/all'
     # set() to remove duplicates, list() to return back to normal 
     legends = list(set(getLegends()))
+    sizes = getSizes()
     req = getRequest(url)
     table = getTable(req)
     getData(table)
